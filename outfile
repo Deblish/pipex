@@ -1,0 +1,13 @@
+Makefile
+ft_printf
+infile
+libft
+main.c
+main.o
+outfile
+pbcopy
+pipex
+pipex.h
+test.txt
+utils.c
+utils.o

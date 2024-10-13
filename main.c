@@ -6,7 +6,7 @@
 /*   By: aapadill <aapadill@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 11:19:26 by aapadill          #+#    #+#             */
-/*   Updated: 2024/10/12 18:06:49 by aapadill         ###   ########.fr       */
+/*   Updated: 2024/10/12 18:27:17 by aapadill         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,36 +56,6 @@ char	*get_cmd_path(char *cmd, char **envp)
 	return (NULL); //ft_perror() would be better?
 }
 
-/*
-void	first_child(int infile, int outfile, int *pipefd, char **argv, char **envp)
-{
-	char	**cmd_args;
-	char	*cmd_path;
-	int	n;
-
-	//standard input to infile
-	if (dup2(infile, STDIN_FILENO) < 0)
-		ft_perror("At dup2 infile", 1);
-	//standard output to write end of the pipe
-	if (dup2(pipefd[1], STDOUT_FILENO) < 0)
-		ft_perror("At dup2 pipefd[1]", 1);
-	close(pipefd[0]);
-	close(infile);
-	close(outfile);
-
-	//parsing cmd
-	cmd_args = ft_split(argv[2], ' ', &n);
-	if (!cmd_args || !cmd_args[0])
-		ft_perror("Invalid command", 0);
-	//resolving cmd path
-	cmd_path = get_cmd_path(cmd_args[0], envp);
-	if (!cmd_path)
-		ft_perror("Non-existent path", 0);
-	if (execve(cmd_path, cmd_args, envp) == -1)
-		ft_perror("At execve cmd 1", 0);
-}
-*/
-
 //./pipex file1 cmd1 cmd2 file2
 int	main (int argc, char **argv, char **envp)
 {
@@ -112,10 +82,10 @@ int	main (int argc, char **argv, char **envp)
 	if (pid1 == 0)
 	//	first_child(infile, outfile, &pipefd[2], argv, envp);
 	{
-		//standard input to infile
+		//stdin to infile
 		if (dup2(infile, STDIN_FILENO) < 0)
 			ft_perror("At dup2 infile", 1);
-		//standard output to write end of the pipe
+		//stdout to write end of the pipe
 		if (dup2(pipefd[1], STDOUT_FILENO) < 0)
 			ft_perror("At dup2 pipefd[1]", 1);
 		close(pipefd[0]);
@@ -125,7 +95,7 @@ int	main (int argc, char **argv, char **envp)
 		//parsing cmd
 		cmd_args = ft_split(argv[2], ' ', &n);
 		if (!cmd_args || !cmd_args[0])
-			ft_perror("Invalid command", 0);
+			ft_perror("Invalid command 1st", 0);
 		//resolving cmd path
 		cmd_path = get_cmd_path(cmd_args[0], envp);
 		if (!cmd_path)
@@ -135,7 +105,28 @@ int	main (int argc, char **argv, char **envp)
 	}
 	pid2 = fork();
 	if (pid2 == 0)
-		printf("2nd Child process: %i\n", pid2);
+	{
+		//stdin to read end of the pipe
+		if (dup2(pipefd[0], STDIN_FILENO) < 0)
+			ft_perror("At dup2 pipefd[0]", 1);
+		if (dup2(outfile, STDOUT_FILENO) < 0)
+			ft_perror("At dup2 outfile", 1);
+		close(pipefd[1]);
+		close(infile);
+		close(outfile);
+
+		//parsing cmd2
+		cmd_args = ft_split(argv[3], ' ', &n);
+		if (!cmd_args || !cmd_args[0])
+			ft_perror("Invalid command 2nd", 0);
+		//resolving cmd path
+		cmd_path = get_cmd_path(cmd_args[0], envp);
+		if (!cmd_path)
+			ft_perror("Non-existent path", 0);
+		if (execve(cmd_path, cmd_args, envp) == -1)
+			ft_perror("At execve cmd 2", 0);
+
+	}
 	close(pipefd[0]);
 	close(pipefd[1]);
 	waitpid(pid1, NULL, 0);
