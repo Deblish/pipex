@@ -6,130 +6,151 @@
 /*   By: aapadill <aapadill@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 11:19:26 by aapadill          #+#    #+#             */
-/*   Updated: 2024/10/12 18:27:17 by aapadill         ###   ########.fr       */
+/*   Updated: 2024/10/18 17:41:32 by aapadill         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 #include <stdio.h>
 
-char	*get_cmd_path(char *cmd, char **envp)
+void	first_child(int *pipefd, char **argv, char **envp)
 {
-	int	i;
-	int	n;
-	char	**paths;
-	char	*path_env;
-	char	*full_path;
+	int		infile;
+	char	**cmd_args;
+	char	*cmd_path;
+	int		n;
 
-	//find path from envp
-	path_env = NULL;
-	i = 0;
-	while (envp[i])
+	//parsing cmd
+	cmd_args = ft_split(argv[2], ' ', &n);
+	if (!cmd_args || !cmd_args[0])
+		ft_perror("Invalid command 1st", 0);
+	//resolving cmd path
+	cmd_path = get_cmd_path(cmd_args[0], envp);
+	if (!cmd_path)
 	{
-		if (ft_strncmp(envp[i], "PATH=", 5) == 0)
-		{
-			path_env = envp[i] + 5; //hardcored jump PATH=
-			break ;
-		}
-		i++;
+		perror(cmd_args[0]);
+		free(cmd_path);
+		ft_free(n, (void **)cmd_args);
+		exit(127);
 	}
-	if (!path_env)
-		return (NULL); //ft_perror() would be better?
+	
+	//redirecting infile
+	infile = open(argv[1], O_RDONLY);
+	if (infile < 0)
+	{
+		perror(argv[1]);
+		exit(EXIT_FAILURE);
+	}
+	//stdin to infile
+	if (dup2(infile, STDIN_FILENO) < 0)
+	{
+		printf("error at dup2 infile");
+		//ft_perror("At dup2 infile", 1);
+	}
+	//stdout to write end of the pipe
+	if (dup2(pipefd[1], STDOUT_FILENO) < 0)
+	{
+		printf("error at dup2 pipefd[1]");
+		//ft_perror("At dup2 pipefd[1]", 1);
+	}
+	close(pipefd[0]);
+	close(pipefd[1]);
+	close(infile);
 
-	//splitting path into actual directories
-	paths = ft_split(path_env, ':', &n);
-	i = 0;
-	while (paths[i])
+	if (execve(cmd_path, cmd_args, envp) == -1)
 	{
-		full_path = ft_strjoin(paths[i], "/");
-		full_path = ft_strjoin(full_path, cmd);
-		if (access(full_path, F_OK | X_OK) == 0)
-		{
-			//free paths memory
-			//free anything else?
-			return (full_path);
-		}
-		free(full_path);
-		i++;
+		perror(cmd_args[0]);
+		free(cmd_path);
+		ft_free(n, (void **)cmd_args);
+		exit(127);
 	}
-	//free paths memory
-	return (NULL); //ft_perror() would be better?
+	free(cmd_path);
+	ft_free(n, (void **)cmd_args);
+}
+
+void	second_child(int *pipefd, char **argv, char **envp)
+{
+	int		outfile;
+	char	**cmd_args;
+	char	*cmd_path;
+	int		n;
+
+	outfile = open(argv[4], O_CREAT | O_WRONLY | O_TRUNC, 0644);
+	if (outfile < 0)
+	{
+		perror(argv[4]);
+		exit(EXIT_FAILURE);
+	}
+	//stdin to read end of the pipe
+	if (dup2(pipefd[0], STDIN_FILENO) < 0)
+		ft_perror("At dup2 pipefd[0]", 1);
+	if (dup2(outfile, STDOUT_FILENO) < 0)
+		ft_perror("At dup2 outfile", 1);
+	close(pipefd[0]);
+	close(pipefd[1]);
+	close(outfile);
+
+	//parsing cmd2
+	cmd_args = ft_split(argv[3], ' ', &n);
+	if (!cmd_args || !cmd_args[0])
+	{
+		ft_perror("Invalid command 2nd", 0);
+	}
+	//resolving cmd path
+	cmd_path = get_cmd_path(cmd_args[0], envp);
+	if (!cmd_path)
+	{
+		perror(cmd_args[0]);
+		ft_free(n, (void **)cmd_args);
+		exit(127);
+	}
+	if (execve(cmd_path, cmd_args, envp) == -1)
+	{
+		perror(cmd_args[0]);
+		free(cmd_path);
+		ft_free(n, (void **)cmd_args);
+		exit(127);
+	}
+	free(cmd_path);
+	ft_free(n, (void **)cmd_args);
 }
 
 //./pipex file1 cmd1 cmd2 file2
 int	main (int argc, char **argv, char **envp)
 {
-	int	infile;
-	int	outfile;
 	int	pipefd[2];
 	pid_t	pid1;
 	pid_t	pid2;
+	int	status1;
+	int	status2;
 
-	char	**cmd_args;
-	char	*cmd_path;
-	int	n;
-
-	//error 1
+	int i = -1;
+	while(envp[++i])
+		printf("envp[%i]: %s\n", i, envp[i]);
 	if (argc != 5)
 		ft_perror("Too many little/many arguments", 0);
-	infile = open(argv[1], O_RDONLY);
-	outfile = open(argv[4], O_CREAT | O_WRONLY | O_TRUNC, 0644);
-	if (infile < 0 | outfile < 0)
-		ft_perror("Error opening file", 1);
 	if (pipe(pipefd) == -1)
 		ft_perror("Pipe failed", 1);
 	pid1 = fork();
+	if (pid1 == -1)
+		ft_perror("Fork failed", 1);
 	if (pid1 == 0)
-	//	first_child(infile, outfile, &pipefd[2], argv, envp);
 	{
-		//stdin to infile
-		if (dup2(infile, STDIN_FILENO) < 0)
-			ft_perror("At dup2 infile", 1);
-		//stdout to write end of the pipe
-		if (dup2(pipefd[1], STDOUT_FILENO) < 0)
-			ft_perror("At dup2 pipefd[1]", 1);
-		close(pipefd[0]);
-		close(infile);
-		close(outfile);
-
-		//parsing cmd
-		cmd_args = ft_split(argv[2], ' ', &n);
-		if (!cmd_args || !cmd_args[0])
-			ft_perror("Invalid command 1st", 0);
-		//resolving cmd path
-		cmd_path = get_cmd_path(cmd_args[0], envp);
-		if (!cmd_path)
-			ft_perror("Non-existent path", 0);
-		if (execve(cmd_path, cmd_args, envp) == -1)
-			ft_perror("At execve cmd 1", 0);
+		first_child(pipefd, argv, envp);
 	}
 	pid2 = fork();
+	if (pid2 == -1)
+		ft_perror("Fork failed", 1);
 	if (pid2 == 0)
 	{
-		//stdin to read end of the pipe
-		if (dup2(pipefd[0], STDIN_FILENO) < 0)
-			ft_perror("At dup2 pipefd[0]", 1);
-		if (dup2(outfile, STDOUT_FILENO) < 0)
-			ft_perror("At dup2 outfile", 1);
-		close(pipefd[1]);
-		close(infile);
-		close(outfile);
-
-		//parsing cmd2
-		cmd_args = ft_split(argv[3], ' ', &n);
-		if (!cmd_args || !cmd_args[0])
-			ft_perror("Invalid command 2nd", 0);
-		//resolving cmd path
-		cmd_path = get_cmd_path(cmd_args[0], envp);
-		if (!cmd_path)
-			ft_perror("Non-existent path", 0);
-		if (execve(cmd_path, cmd_args, envp) == -1)
-			ft_perror("At execve cmd 2", 0);
-
+		second_child(pipefd, argv, envp);
 	}
 	close(pipefd[0]);
 	close(pipefd[1]);
-	waitpid(pid1, NULL, 0);
-	waitpid(pid2, NULL, 0);
-	return (0);
+	waitpid(pid1, &status1, 0);
+	waitpid(pid2, &status2, 0);
+	if (WIFEXITED(status2))
+		exit(WEXITSTATUS(status2));
+	else
+		exit(EXIT_FAILURE);
 }

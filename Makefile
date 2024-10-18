@@ -1,6 +1,6 @@
 NAME		= pipex
 CC			= cc
-CFLAGS		= -Wextra -Wall -Werror #-O0 -Ofast -g #-fsanitize=address -Wunreachable-code
+CFLAGS		= -Wextra -Wall -Werror -g #-O0 -Ofast #-fsanitize=address -Wunreachable-code
 FT_PRINTF	= ./ft_printf
 LIBFT		= ./libft
 
