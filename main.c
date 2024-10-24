@@ -15,10 +15,10 @@
 
 void	first_child(int *pipefd, char **argv, char **envp)
 {
-	int		infile;
+	int	infile;
 	char	**cmd_args;
 	char	*cmd_path;
-	int		n;
+	int	n;
 
 	//open infile
 	infile = open(argv[1], O_RDONLY);
@@ -37,6 +37,7 @@ void	first_child(int *pipefd, char **argv, char **envp)
 	//redirect stdout to write end of the pipe
 	if (dup2(pipefd[1], STDOUT_FILENO) < 0)
 		perror("dup2 pipefd[1");
+
 	close(pipefd[0]);
 	close(pipefd[1]);
 	close(infile);
@@ -114,6 +115,7 @@ void	second_child(int *pipefd, char **argv, char **envp)
 	outfile = open(argv[4], O_CREAT | O_WRONLY | O_TRUNC, 0644);
 	if (outfile < 0)
 	{
+		ft_putstr_fd("./pipex: ", STDERR_FILENO);
 		perror(argv[4]);
 		exit(1);
 	}
