@@ -28,4 +28,5 @@
 int	ft_perror(char *error_msg, int is_syscall);
 void	ft_free(int n, void **ptr_array);
 char	*get_cmd_path(char *cmd, char **envp);
+void	ft_error(char *error_msg, int print_errno);
 #endif
