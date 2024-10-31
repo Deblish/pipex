@@ -6,7 +6,7 @@
 /*   By: aapadill <aapadill@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 11:19:26 by aapadill          #+#    #+#             */
-/*   Updated: 2024/10/24 15:55:23 by aapadill         ###   ########.fr       */
+/*   Updated: 2024/10/24 18:15:35 by aapadill         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,7 +98,7 @@ void	first_child(int *pipefd, char **argv, char **envp)
 		else if (errno == EISDIR)
 			exit(126);
 		else
-			exit(1);
+			exit(EXIT_FAILURE);
 	}
 	free(cmd_path);
 	ft_free(n, (void **)cmd_args);
@@ -117,7 +117,7 @@ void	second_child(int *pipefd, char **argv, char **envp)
 	{
 		ft_putstr_fd("./pipex: ", STDERR_FILENO);
 		perror(argv[4]);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	//redirect stdin to read end of the pipe
@@ -187,7 +187,7 @@ void	second_child(int *pipefd, char **argv, char **envp)
 		else if (errno == EISDIR)
 			exit(126);
 		else
-			exit(1);
+			exit(EXIT_FAILURE);
 	}
 	free(cmd_path);
 	ft_free(n, (void **)cmd_args);
