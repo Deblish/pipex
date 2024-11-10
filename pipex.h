@@ -6,7 +6,7 @@
 /*   By: aapadill <aapadill@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 13:31:05 by aapadill          #+#    #+#             */
-/*   Updated: 2024/10/18 15:05:51 by aapadill         ###   ########.fr       */
+/*   Updated: 2024/11/01 11:24:32 by aapadill         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,11 @@
 # include "libft/libft.h"
 # include "ft_printf/include/ft_printf.h"
 
+# define EXIT_CMD_NOT_FOUND 127
+# define EXIT_PERMISSION_DENIED 126
+
 //utils
-int	ft_perror(char *error_msg, int is_syscall);
+int		ft_perror(char *error_msg, int is_syscall);
 void	ft_free(int n, void **ptr_array);
 char	*get_cmd_path(char *cmd, char **envp);
 void	ft_error(char *error_msg, int print_errno);

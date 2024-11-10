@@ -6,12 +6,11 @@
 /*   By: aapadill <aapadill@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 11:19:26 by aapadill          #+#    #+#             */
-/*   Updated: 2024/10/24 18:15:35 by aapadill         ###   ########.fr       */
+/*   Updated: 2024/11/10 13:07:13 by aapadill         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
-#include <stdio.h>
 
 void	first_child(int *pipefd, char **argv, char **envp)
 {
@@ -27,7 +26,6 @@ void	first_child(int *pipefd, char **argv, char **envp)
 		ft_putstr_fd("./pipex: ", STDERR_FILENO);
 		perror(argv[1]);
 		exit(EXIT_FAILURE);
-		//infile = open("/dev/null", O_RDONLY);
 	}
 
 	//redirect stdin to infile
@@ -36,14 +34,13 @@ void	first_child(int *pipefd, char **argv, char **envp)
 
 	//redirect stdout to write end of the pipe
 	if (dup2(pipefd[1], STDOUT_FILENO) < 0)
-		perror("dup2 pipefd[1");
+		perror("dup2 pipefd[1]");
 
 	close(pipefd[0]);
 	close(pipefd[1]);
 	close(infile);
 
-	//parsing cmd1
-	cmd_args = ft_split(argv[2], ' ', &n);
+	cmd_args = ft_split(argv[2], ' ', &n); //malloc
 	if (!cmd_args || !cmd_args[0])
 	{
 		ft_putstr_fd("./pipex: ", STDERR_FILENO);
@@ -53,7 +50,7 @@ void	first_child(int *pipefd, char **argv, char **envp)
 			ft_putstr_fd(argv[2], STDERR_FILENO);
 		ft_putendl_fd(": command not found", STDERR_FILENO);
 		ft_free(n, (void **)cmd_args);
-		exit(127);
+		exit(EXIT_CMD_NOT_FOUND);
 	}
 
 	//resolving cmd path
@@ -64,7 +61,7 @@ void	first_child(int *pipefd, char **argv, char **envp)
 		ft_putstr_fd(cmd_args[0], STDERR_FILENO);
 		ft_putendl_fd(": command not found", STDERR_FILENO);
 		ft_free(n, (void **)cmd_args);
-		exit(127);
+		exit(EXIT_CMD_NOT_FOUND);
 	}
 
 	//checking if cmd is a directory
@@ -80,8 +77,9 @@ void	first_child(int *pipefd, char **argv, char **envp)
 			perror(cmd_args[0]);
 			free(cmd_path);
 			ft_free(n, (void **)cmd_args);
-			exit(126);
+			exit(EXIT_PERMISSION_DENIED);
 		}
+		free(line);
 	}
 
 	//try exec
@@ -92,11 +90,11 @@ void	first_child(int *pipefd, char **argv, char **envp)
 		free(cmd_path);
 		ft_free(n, (void **)cmd_args);
 		if (errno == EACCES)
-			exit(126);
+			exit(EXIT_PERMISSION_DENIED);
 		else if (errno == ENOENT)
-			exit(127);
+			exit(EXIT_CMD_NOT_FOUND);
 		else if (errno == EISDIR)
-			exit(126);
+			exit(EXIT_PERMISSION_DENIED);
 		else
 			exit(EXIT_FAILURE);
 	}
@@ -132,7 +130,7 @@ void	second_child(int *pipefd, char **argv, char **envp)
 	close(outfile);
 
 	//parsing cmd2
-	cmd_args = ft_split(argv[3], ' ', &n);
+	cmd_args = ft_split(argv[3], ' ', &n); //malloc
 	if (!cmd_args || !cmd_args[0])
 	{
 		ft_putstr_fd("./pipex: ", STDERR_FILENO);
@@ -142,7 +140,7 @@ void	second_child(int *pipefd, char **argv, char **envp)
 			ft_putstr_fd(argv[3], STDERR_FILENO);
 		ft_putendl_fd(": command not found", STDERR_FILENO);
 		ft_free(n, (void **)cmd_args);
-		exit(127);
+		exit(EXIT_CMD_NOT_FOUND);
 	}
 
 	//resolving cmd path
@@ -153,7 +151,7 @@ void	second_child(int *pipefd, char **argv, char **envp)
 		ft_putstr_fd(cmd_args[0], STDERR_FILENO);
 		ft_putendl_fd(": command not found", STDERR_FILENO);
 		ft_free(n, (void **)cmd_args);
-		exit(127);
+		exit(EXIT_CMD_NOT_FOUND);
 	}
 
 	//checking if cmd is a directory
@@ -171,6 +169,7 @@ void	second_child(int *pipefd, char **argv, char **envp)
 			ft_free(n, (void **)cmd_args);
 			exit(126);
 		}
+		free(line);
 	}
 
 	//try exec
@@ -208,15 +207,24 @@ int	main (int argc, char **argv, char **envp)
 		exit(EXIT_FAILURE);
 	}
 	if (pipe(pipefd) == -1)
-		ft_perror("Pipe failed", 1);
+	{
+		ft_putstr_fd("./pipex: pipe failed", STDERR_FILENO);
+		exit(EXIT_FAILURE);
+	}
 	pid1 = fork();
 	if (pid1 == -1)
-		ft_perror("Fork failed", 1);
+	{
+		ft_putstr_fd("./pipex: fork 1 failed", STDERR_FILENO);
+		exit(EXIT_FAILURE);
+	}
 	if (pid1 == 0)
 		first_child(pipefd, argv, envp);
 	pid2 = fork();
 	if (pid2 == -1)
-		ft_perror("Fork failed", 1);
+	{
+		ft_putstr_fd("./pipex: fork 2 failed", STDERR_FILENO);
+		exit(EXIT_FAILURE);
+	}
 	if (pid2 == 0)
 		second_child(pipefd, argv, envp);
 	close(pipefd[0]);
