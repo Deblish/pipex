@@ -38,7 +38,7 @@ char	*get_cmd_path(char *cmd, char **envp)
 			ft_putstr_fd("./pipex: ", STDERR_FILENO);
 			perror(cmd);
 			//i need to free cmd_args, should i just do it here?
-			exit(127);
+			exit(EXIT_CMD_NOT_FOUND);
 		}
 	}
 
@@ -59,7 +59,7 @@ char	*get_cmd_path(char *cmd, char **envp)
 		ft_putstr_fd("./pipex: ", STDERR_FILENO);
 		open("/non/existent", O_RDONLY);
 		perror(cmd);
-		exit(127);
+		exit(EXIT_CMD_NOT_FOUND);
 	}
 
 	//splitting path into actual directories

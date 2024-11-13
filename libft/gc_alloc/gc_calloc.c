@@ -1,25 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_putchar.c                                       :+:      :+:    :+:   */
+/*   gc_calloc.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aapadill <aapadill@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/05/10 14:29:20 by aapadill          #+#    #+#             */
-/*   Updated: 2024/05/13 17:19:13 by aapadill         ###   ########.fr       */
+/*   Created: 2024/11/07 23:31:52 by aapadill          #+#    #+#             */
+/*   Updated: 2024/11/08 13:05:25 by aapadill         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/ft_printf.h"
+#include "gc_alloc.h"
 
-int	ft_putchar(const char c, int *count)
+void	*gc_calloc(size_t count, size_t size)
 {
-	if (write(1, &c, 1) != -1)
-		(*count)++;
-	else
-	{
-		*count = -1;
-		return (0);
-	}
-	return (1);
+	void	*mem;
+
+	if (size != 0 && ((SIZE_MAX / size) <= (count * size)))
+		return (NULL);
+	mem = gc_alloc(count * size);
+	if (!mem)
+		return (NULL);
+	ft_bzero(mem, count * size);
+	return (mem);
 }

@@ -1,10 +1,9 @@
 NAME		= pipex
 CC			= cc
 CFLAGS		= -Wextra -Wall -Werror -g #-O0 -Ofast #-fsanitize=address -Wunreachable-code
-FT_PRINTF	= ./ft_printf
 LIBFT		= ./libft
 
-HEADERS	= -I $(FT_PRINTF)/include
+HEADERS	= -Iincludes
 
 SRCS	= main.c utils.c
 
@@ -14,20 +13,17 @@ all: $(NAME)
 
 $(LIBFT)/libft.a:
 	make -C $(LIBFT)
-
-$(FT_PRINTF)/libftprintf.a:
-	make -C $(FT_PRINTF)
+	make bonus -C $(LIBFT)
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(HEADERS) -o $@ -c $<
 
-$(NAME): $(OBJS) $(LIBFT)/libft.a $(FT_PRINTF)/libftprintf.a
-	$(CC) $(OBJS) $(LIBFT)/libft.a $(FT_PRINTF)/libftprintf.a -o $(NAME) 
+$(NAME): $(OBJS) $(LIBFT)/libft.a
+	$(CC) $(OBJS) $(LIBFT)/libft.a -o $(NAME) 
 
 clean:
 	rm -rf $(OBJS)
 	make -C $(LIBFT) fclean
-	make -C $(FT_PRINTF) fclean
 
 fclean: clean
 	rm -rf $(NAME)

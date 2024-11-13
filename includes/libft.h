@@ -6,7 +6,7 @@
 /*   By: aapadill <aapadill@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/17 14:48:55 by aapadill          #+#    #+#             */
-/*   Updated: 2024/09/03 02:08:22 by aapadill         ###   ########.fr       */
+/*   Updated: 2024/11/07 14:40:05 by aapadill         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,14 @@
 
 # ifndef OPEN_MAX
 #  define OPEN_MAX 1024
+# endif
+
+# ifndef READ_LINE
+#  define READ_LINE 0
+# endif
+
+# ifndef CLEAN_LINE
+#  define CLEAN_LINE 1
 # endif
 
 typedef struct s_list
@@ -83,7 +91,7 @@ int		has_duplicates(int i, char **argv);
 int		int_overflows(const char *str);
 
 char	*ft_strjoin_gnl(char *s1, char *s2);
-char	*get_next_line(int fd);
+char	*get_next_line(int fd, int free_static);
 
 long	ft_atoi_base(const char *str, int base);
 #endif

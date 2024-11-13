@@ -6,7 +6,7 @@
 /*   By: aapadill <aapadill@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 13:31:05 by aapadill          #+#    #+#             */
-/*   Updated: 2024/11/01 11:24:32 by aapadill         ###   ########.fr       */
+/*   Updated: 2024/11/13 23:57:18 by aapadill         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,8 @@
 # include <stdio.h> //perror()
 # include <sys/wait.h> //waitpid()
 
-# include "libft/libft.h"
-# include "ft_printf/include/ft_printf.h"
+# include "libft.h"
+# include "gc_alloc.h"
 
 # define EXIT_CMD_NOT_FOUND 127
 # define EXIT_PERMISSION_DENIED 126

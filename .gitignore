@@ -4,3 +4,4 @@ pipexTester/
 ppx_err_tester.sh
 tester_pipex.sh
 cat
+*.o

@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*   gc_next_line.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aapadill <aapadill@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/06/09 16:02:10 by aapadill          #+#    #+#             */
-/*   Updated: 2024/11/07 14:38:35 by aapadill         ###   ########.fr       */
+/*   Created: 2024/11/08 00:06:34 by aapadill          #+#    #+#             */
+/*   Updated: 2024/11/08 13:10:35 by aapadill         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
+#include "gc_alloc.h"
 
 static char	*ft_update_buffer(char *buffer)
 {
@@ -24,17 +24,17 @@ static char	*ft_update_buffer(char *buffer)
 		start = eol + 1;
 	if (!*start)
 	{
-		free(buffer);
+		gc_free(buffer);
 		return (NULL);
 	}
-	new = malloc(ft_strchr(start, '\0') - buffer + sizeof(char));
+	new = gc_alloc(ft_strlen(start) + 1);
 	if (!new)
 	{
-		free(buffer);
+		gc_free(buffer);
 		return (NULL);
 	}
-	ft_strlcpy(new, start, ft_strchr(start, '\0') - buffer + sizeof(char));
-	free(buffer);
+	ft_strlcpy(new, start, ft_strlen(start) + 1);
+	gc_free(buffer);
 	return (new);
 }
 
@@ -46,16 +46,16 @@ static char	*ft_get_line(char *buffer)
 
 	eol = ft_strchr(buffer, '\n');
 	if (!eol)
-		len = ft_strchr(buffer, '\0') - buffer;
+		len = ft_strlen(buffer);
 	if (eol)
 		len = eol - buffer + 1;
-	line = malloc(len + sizeof(char));
+	line = gc_alloc(len + 1);
 	if (!line)
 	{
-		free(buffer);
+		gc_free(buffer);
 		return (NULL);
 	}
-	ft_strlcpy(line, buffer, len + sizeof(char));
+	ft_strlcpy(line, buffer, len + 1);
 	return (line);
 }
 
@@ -65,19 +65,19 @@ static char	ft_read_helper(ssize_t bytes_read, char **aux, char **buffer)
 
 	if (bytes_read < 0)
 	{
-		free(*aux);
-		free(*buffer);
+		gc_free(*aux);
+		gc_free(*buffer);
 		return (-1);
 	}
 	if (bytes_read == 0)
 		return (1);
 	aux[0][bytes_read] = '\0';
 	old = *buffer;
-	*buffer = ft_strjoin_gnl(*buffer, *aux);
-	free(old);
+	*buffer = gc_strjoin_gnl(*buffer, *aux);
+	gc_free(old);
 	if (!*buffer)
 	{
-		free(*aux);
+		gc_free(*aux);
 		return (-1);
 	}
 	if (ft_strchr(*buffer, '\n'))
@@ -91,10 +91,10 @@ static char	*ft_read(int fd, char *buffer)
 	ssize_t	bytes_read;
 	int		stopper;
 
-	aux = malloc(BUFFER_SIZE + sizeof(char));
+	aux = gc_alloc(BUFFER_SIZE + 1);
 	if (!aux)
 	{
-		free(buffer);
+		gc_free(buffer);
 		return (NULL);
 	}
 	bytes_read = 1;
@@ -107,11 +107,11 @@ static char	*ft_read(int fd, char *buffer)
 		if (stopper)
 			break ;
 	}
-	free(aux);
+	gc_free(aux);
 	return (buffer);
 }
 
-char	*get_next_line(int fd, int free_static)
+char	*gc_next_line(int fd, int free_static)
 {
 	static char	*buffer[OPEN_MAX];
 	char		*line;
@@ -120,7 +120,7 @@ char	*get_next_line(int fd, int free_static)
 		return (NULL);
 	if (BUFFER_SIZE < 1 || 0 > read(fd, 0, 0) || free_static)
 	{
-		free(buffer[fd]);
+		gc_free(buffer[fd]);
 		buffer[fd] = NULL;
 		return (NULL);
 	}
@@ -133,7 +133,7 @@ char	*get_next_line(int fd, int free_static)
 	buffer[fd] = ft_update_buffer(buffer[fd]);
 	if (!ft_strchr(line, '\n'))
 	{
-		free(buffer[fd]);
+		gc_free(buffer[fd]);
 		buffer[fd] = NULL;
 	}
 	return (line);

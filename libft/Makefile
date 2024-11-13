@@ -1,4 +1,5 @@
-CFLAGS = -Wall -Wextra -Werror
+INCLUDES = -I../includes
+CFLAGS = -Wall -Wextra -Werror $(INCLUDES)
 
 AR = ar rcs
 
@@ -49,7 +50,23 @@ SOURCES = ft_isalpha.c \
 		  ft_atoi_base.c
 
 #b_sources calls the bonus source codes
-B_SOURCES = ft_lstnew_bonus.c ft_lstadd_front_bonus.c ft_lstsize_bonus.c ft_lstlast_bonus.c ft_lstadd_back_bonus.c ft_lstdelone_bonus.c ft_lstclear_bonus.c ft_lstiter_bonus.c ft_lstmap_bonus.c
+B_SOURCES = ft_lstnew_bonus.c \
+			ft_lstadd_front_bonus.c \
+			ft_lstsize_bonus.c \
+			ft_lstlast_bonus.c \
+			ft_lstadd_back_bonus.c \
+			ft_lstdelone_bonus.c \
+			ft_lstclear_bonus.c \
+			ft_lstiter_bonus.c \
+			ft_lstmap_bonus.c \
+			gc_alloc/gc_alloc.c \
+			gc_alloc/gc_itoa.c \
+			gc_alloc/gc_next_line.c \
+			gc_alloc/gc_split.c \
+			gc_alloc/gc_strdup.c \
+			gc_alloc/gc_strjoin.c \
+			gc_alloc/gc_substr.c \
+			gc_alloc/gc_calloc.c \
 
 #objects calls the .o equivalent of the sources.c files
 OBJECTS = $(SOURCES:.c=.o)
