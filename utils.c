@@ -32,12 +32,12 @@ char	*get_cmd_path(char *cmd, char **envp)
 	if (ft_strchr(cmd, '/'))
 	{
 		if (access(cmd, F_OK) == 0)
-			return (ft_strdup(cmd));
+			return (gc_strdup(cmd));
 		else
 		{
 			ft_putstr_fd("./pipex: ", STDERR_FILENO);
 			perror(cmd);
-			//i need to free cmd_args, should i just do it here?
+			gc_free_all();
 			exit(EXIT_CMD_NOT_FOUND);
 		}
 	}
@@ -63,24 +63,24 @@ char	*get_cmd_path(char *cmd, char **envp)
 	}
 
 	//splitting path into actual directories
-	paths = ft_split(path_env, ':', &n);
+	paths = gc_split(path_env, ':', &n);
 	i = 0;
 	while (paths[i])
 	{
-		aux_path = ft_strjoin(paths[i], "/");
-		free(paths[i]);
-		full_path = ft_strjoin(aux_path, cmd);
-		free(aux_path);
+		aux_path = gc_strjoin(paths[i], "/");
+		//free(paths[i]);
+		full_path = gc_strjoin(aux_path, cmd);
+		//free(aux_path);
 		if (access(full_path, F_OK | X_OK) == 0)
 		{
-			while (++i < n)
-				free(paths[i]);
-			free(paths);
+			//while (++i < n)
+			//	free(paths[i]);
+			//free(paths);
 			return (full_path);
 		}
-		free(full_path);
+		//free(full_path);
 		i++;
 	}
-	free(paths);
+	//free(paths);
 	return (NULL);
 }

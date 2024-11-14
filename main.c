@@ -58,11 +58,12 @@ void	redirect_stdout(int outfile)
 	}
 }
 
-char	**parse_command(char *cmd, int *n)
+char	**parse_command(char *cmd)
 {
-	char **cmd_args;
+	char	**cmd_args;
+	int		n;
 
-	cmd_args = ft_split(cmd, ' ', n);
+	cmd_args = gc_split(cmd, ' ', &n);
 	if (!cmd_args || !cmd_args[0])
 	{
 		ft_putstr_fd("./pipex: ", STDERR_FILENO);
@@ -71,13 +72,13 @@ char	**parse_command(char *cmd, int *n)
 		else
 			ft_putstr_fd(cmd, STDERR_FILENO);
 		ft_putendl_fd(": command not found", STDERR_FILENO);
-		ft_free(*n, (void **)cmd_args);
+		gc_free_all();
 		exit(EXIT_CMD_NOT_FOUND);
 	}
 	return (cmd_args);
 }
 
-char	*resolve_cmd_path(char **cmd_args, char **envp, int *n)
+char	*resolve_cmd_path(char **cmd_args, char **envp)
 {
 	char	*cmd_path;
 
@@ -87,13 +88,13 @@ char	*resolve_cmd_path(char **cmd_args, char **envp, int *n)
 		ft_putstr_fd("./pipex: ", STDERR_FILENO);
 		ft_putstr_fd(cmd_args[0], STDERR_FILENO);
 		ft_putendl_fd(": command not found", STDERR_FILENO);
-		ft_free(*n, (void **)cmd_args);
+		gc_free_all();
 		exit(EXIT_CMD_NOT_FOUND);
 	}
 	return (cmd_path);
 }
 
-void is_directory(char *cmd_path, char **cmd_args, int n)
+void is_directory(char *cmd_path, char **cmd_args)
 {
 	char	*line;
 	int		aux;
@@ -102,28 +103,28 @@ void is_directory(char *cmd_path, char **cmd_args, int n)
 	aux = open(cmd_path, O_RDONLY);
 	if (aux > 0)
 	{
-		line = get_next_line(aux, READ_LINE);
+		line = gc_next_line(aux, READ_LINE);
 		close(aux);
 		if (!line)
 		{
 			ft_putstr_fd("./pipex: ", STDERR_FILENO);
 			perror(cmd_args[0]);
-			free(cmd_path);
-			ft_free(n, (void **)cmd_args);
+			//free(cmd_path);
+			gc_free_all();
 			exit(EXIT_PERMISSION_DENIED);
 		}
-		free(line);
+		//free(line);
 	}
 }
 
-void	try_exec(char *cmd_path, char **cmd_args, char **envp, int n)
+void	try_exec(char *cmd_path, char **cmd_args, char **envp)
 {
 	if (execve(cmd_path, cmd_args, envp) == -1)
 	{
 		ft_putstr_fd("./pipex: ", STDERR_FILENO);
 		perror(cmd_args[0]);
-		free(cmd_path);
-		ft_free(n, (void **)cmd_args);
+		//free(cmd_path);
+		gc_free_all();
 		if (errno == EACCES)
 			exit(EXIT_PERMISSION_DENIED);
 		else if (errno == ENOENT)
@@ -140,7 +141,6 @@ void	first_child(int *pipefd, char **argv, char **envp)
 	int		infile;
 	char	**cmd_args;
 	char	*cmd_path;
-	int		n;
 
 	//open infile
 	infile = open_infile(argv[1]);
@@ -156,20 +156,19 @@ void	first_child(int *pipefd, char **argv, char **envp)
 	close(infile);
 
 	//parsing cmd1
-	cmd_args = parse_command(argv[2], &n);
+	cmd_args = parse_command(argv[2]);
 
 	//resolving cmd path
-	cmd_path = resolve_cmd_path(cmd_args, envp, &n);
+	cmd_path = resolve_cmd_path(cmd_args, envp);
 
 	//checking if cmd is a directory
-	is_directory(cmd_path, cmd_args, n);
+	is_directory(cmd_path, cmd_args);
 
 	//try exec
-	try_exec(cmd_path, cmd_args, envp, n);
+	try_exec(cmd_path, cmd_args, envp);
 
 	//clean up
-	free(cmd_path);
-	ft_free(n, (void **)cmd_args);
+	gc_free_all();
 }
 
 void	second_child(int *pipefd, char **argv, char **envp)
@@ -177,7 +176,6 @@ void	second_child(int *pipefd, char **argv, char **envp)
 	int		outfile;
 	char	**cmd_args;
 	char	*cmd_path;
-	int		n;
 
 	//open file
 	outfile = open_outfile(argv[4]);
@@ -193,20 +191,19 @@ void	second_child(int *pipefd, char **argv, char **envp)
 	close(outfile);
 
 	//parsing cmd2
-	cmd_args = parse_command(argv[3], &n);
+	cmd_args = parse_command(argv[3]);
 
 	//resolving cmd path
-	cmd_path = resolve_cmd_path(cmd_args, envp, &n);
+	cmd_path = resolve_cmd_path(cmd_args, envp);
 
 	//checking if cmd is a directory
-	is_directory(cmd_path, cmd_args, n);
+	is_directory(cmd_path, cmd_args);
 
 	//try exec
-	try_exec(cmd_path, cmd_args, envp, n);
+	try_exec(cmd_path, cmd_args, envp);
 
 	//clean up
-	free(cmd_path);
-	ft_free(n, (void **)cmd_args);
+	gc_free_all();
 }
 
 //./pipex file1 cmd1 cmd2 file2
