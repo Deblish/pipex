@@ -5,7 +5,10 @@ LIBFT		= ./libft
 
 HEADERS	= -Iincludes
 
-SRCS	= main.c utils.c
+SRCS	= get_cmd_path.c \
+		  child_processes.c \
+		  child_utils.c \
+		  main.c
 
 OBJS	= $(SRCS:.c=.o)
 

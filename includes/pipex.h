@@ -6,7 +6,7 @@
 /*   By: aapadill <aapadill@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 13:31:05 by aapadill          #+#    #+#             */
-/*   Updated: 2024/11/13 23:57:18 by aapadill         ###   ########.fr       */
+/*   Updated: 2024/11/14 16:00:58 by aapadill         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,9 +27,17 @@
 # define EXIT_CMD_NOT_FOUND 127
 # define EXIT_PERMISSION_DENIED 126
 
-//utils
-int		ft_perror(char *error_msg, int is_syscall);
-void	ft_free(int n, void **ptr_array);
+//child_processes.c
+void	first_child(int *pipefd, char **argv, char **envp);
+void	second_child(int *pipefd, char **argv, char **envp);
+
+//child_utils.c
+void	redirect_stdin(int infile);
+void	redirect_stdout(int outfile);
+char	**parse_command(char *cmd);
+void	is_directory(char *cmd_path, char **cmd_args);
+void	try_exec(char *cmd_path, char **cmd_args, char **envp);
+
+//get_cmd_path.c
 char	*get_cmd_path(char *cmd, char **envp);
-void	ft_error(char *error_msg, int print_errno);
 #endif
