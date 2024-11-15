@@ -12,6 +12,9 @@
 
 #include "pipex.h"
 
+/*
+ ** Redirects stdin to fd
+ */
 void	redirect_stdin(int infile)
 {
 	if (dup2(infile, STDIN_FILENO) < 0)
@@ -21,6 +24,9 @@ void	redirect_stdin(int infile)
 	}
 }
 
+/*
+ ** Redirects stdout to fd
+ */
 void	redirect_stdout(int outfile)
 {
 	if (dup2(outfile, STDOUT_FILENO) < 0)
