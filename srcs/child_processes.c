@@ -12,6 +12,10 @@
 
 #include "pipex.h"
 
+/*
+ ** Open the input file and return the file descriptor
+ ** If the file cannot be opened, print an error message and exit
+ */
 static int	open_infile(char *infile)
 {
 	int	fd;
@@ -26,6 +30,12 @@ static int	open_infile(char *infile)
 	return (fd);
 }
 
+/*
+ ** Open the output file with write-only access.
+ ** If the file does not exist,
+ ** it will be created with read and write permissions for the owner (0644)
+ ** If the file already exists, its contents will be TRUNC (cleared)
+ */
 static int	open_outfile(char *outfile)
 {
 	int	fd;
@@ -46,24 +56,16 @@ void	first_child(int *pipefd, char **argv, char **envp)
 	char	**cmd_args;
 	char	*cmd_path;
 
-	//open infile
 	infile = open_infile(argv[1]);
-	//redirect stdin to infile
-	redirect_stdin(infile);
-	//redirect stdout to write end of the pipe
-	redirect_stdout(pipefd[1]);
+	redirect_stdin_to(infile);
+	redirect_stdout_to(pipefd[1]);
 	close(pipefd[0]);
 	close(pipefd[1]);
 	close(infile);
-	//parsing cmd1
 	cmd_args = parse_command(argv[2]);
-	//resolving cmd path
-	cmd_path = get_cmd_path(cmd_args[0], envp);
-	//checking if cmd is a directory
+	cmd_path = resolve_path(cmd_args[0], envp);
 	is_directory(cmd_path, cmd_args);
-	//try exec
 	try_exec(cmd_path, cmd_args, envp);
-	//clean up
 	gc_free_all();
 }
 
@@ -73,23 +75,15 @@ void	second_child(int *pipefd, char **argv, char **envp)
 	char	**cmd_args;
 	char	*cmd_path;
 
-	//open file
 	outfile = open_outfile(argv[4]);
-	//redirect stdin to read end of the pipe
-	redirect_stdin(pipefd[0]);
-	//redirect stdout to outfile
-	redirect_stdout(outfile);
+	redirect_stdin_to(pipefd[0]);
+	redirect_stdout_to(outfile);
 	close(pipefd[0]);
 	close(pipefd[1]);
 	close(outfile);
-	//parsing cmd2
 	cmd_args = parse_command(argv[3]);
-	//resolving cmd path
-	cmd_path = get_cmd_path(cmd_args[0], envp);
-	//checking if cmd is a directory
+	cmd_path = resolve_path(cmd_args[0], envp);
 	is_directory(cmd_path, cmd_args);
-	//try exec
 	try_exec(cmd_path, cmd_args, envp);
-	//clean up
 	gc_free_all();
 }

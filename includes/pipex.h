@@ -32,12 +32,12 @@ void	first_child(int *pipefd, char **argv, char **envp);
 void	second_child(int *pipefd, char **argv, char **envp);
 
 //child_utils.c
-void	redirect_stdin(int infile);
-void	redirect_stdout(int outfile);
+void	redirect_stdin_to(int infile);
+void	redirect_stdout_to(int outfile);
 char	**parse_command(char *cmd);
 void	is_directory(char *cmd_path, char **cmd_args);
 void	try_exec(char *cmd_path, char **cmd_args, char **envp);
 
-//get_cmd_path.c
-char	*get_cmd_path(char *cmd, char **envp);
+//resolve_path.c
+char	*resolve_path(char *cmd, char **envp);
 #endif

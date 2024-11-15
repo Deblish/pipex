@@ -14,8 +14,9 @@
 
 /*
  ** Redirects stdin to fd
+ ** if it fails, prints an error message and exits
  */
-void	redirect_stdin(int infile)
+void	redirect_stdin_to(int infile)
 {
 	if (dup2(infile, STDIN_FILENO) < 0)
 	{
@@ -26,8 +27,9 @@ void	redirect_stdin(int infile)
 
 /*
  ** Redirects stdout to fd
+ ** if it fails, prints an error message and exits
  */
-void	redirect_stdout(int outfile)
+void	redirect_stdout_to(int outfile)
 {
 	if (dup2(outfile, STDOUT_FILENO) < 0)
 	{
@@ -36,6 +38,10 @@ void	redirect_stdout(int outfile)
 	}
 }
 
+/*
+ ** Parses the command and returns an array of strings
+ ** where the first element is the command and the rest are the arguments
+ */
 char	**parse_command(char *cmd)
 {
 	char	**cmd_args;
@@ -56,6 +62,10 @@ char	**parse_command(char *cmd)
 	return (cmd_args);
 }
 
+/*
+ ** Only checks if the command is a directory
+ ** if it is, prints an error message and exits
+ */
 void	is_directory(char *cmd_path, char **cmd_args)
 {
 	char	*line;
@@ -77,6 +87,10 @@ void	is_directory(char *cmd_path, char **cmd_args)
 	}
 }
 
+/*
+ ** Executes the command if possible
+ ** if not, prints an error message and exits
+ */
 void	try_exec(char *cmd_path, char **cmd_args, char **envp)
 {
 	if (execve(cmd_path, cmd_args, envp) == -1)

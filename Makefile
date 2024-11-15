@@ -5,7 +5,7 @@ LIBFT		= ./libft
 
 HEADERS	= -Iincludes
 
-SRCS	= srcs/get_cmd_path.c \
+SRCS	= srcs/resolve_path.c \
 		  srcs/child_processes.c \
 		  srcs/child_utils.c \
 		  srcs/main.c

@@ -31,7 +31,7 @@ static void	wait_and_exit(pid_t pid1, pid_t pid2)
 		exit(EXIT_FAILURE);
 }
 
-int	main (int argc, char **argv, char **envp)
+int	main(int argc, char **argv, char **envp)
 {
 	int		pipefd[2];
 	pid_t	pid1;
